@@ -67,6 +67,52 @@ If there is a single point of failure in the infrastructure, such as a critical 
 ## Inability to Scale with High Traffic
  If the infrastructure is not designed to handle high levels of incoming traffic, it may not be able to scale effectively. This can result in slow response times, website crashes, or even complete unavailability during peak traffic periods.
 
+## Distributed web infrastructure
+Two Servers: Adding two servers provides redundancy and high availability. If one server fails, the other can handle the workload.
+
+Web Server (Nginx): Nginx acts as a reverse proxy and web server, responsible for handling client requests and forwarding them to the application server. It improves performance and handles static content efficiently.
+
+Application Server: The application server hosts the code base and executes the application logic. It processes the dynamic content requested by clients and communicates with the database.
+
+Load Balancer (HAProxy): The load balancer distributes incoming traffic across multiple application servers, ensuring optimal resource utilization and high availability. HAProxy uses a distribution algorithm to determine which server receives each request.
+
+Distribution Algorithm: HAProxy supports various algorithms like round-robin, least connections, source IP hashing, etc. The choice depends on the specific needs of the application. For example, round-robin evenly distributes requests, while least connections directs traffic to the server with the fewest active connections.
+Application Files (Code Base): The application files contain the code and resources required to run the application. They are hosted on the application server and are responsible for generating dynamic content.
+
+Database (MySQL): The database stores and manages application data. MySQL is a widely used relational database management system. It ensures data integrity, consistency, and provides a structured storage solution.
+
+Now let's address the explanations you requested:
+
+Load Balancer Setup:
+
+HAProxy is configured with a distribution algorithm, such as round-robin or least connections, to determine how incoming requests are assigned to application servers.
+The load balancer monitors the health of the application servers, automatically removing failed or unresponsive servers from the rotation.
+It balances the traffic based on the selected algorithm, ensuring even distribution and preventing overloading of any specific server.
+Active-Active vs. Active-Passive Setup:
+
+Active-Active Setup: In an active-active setup, all servers actively handle incoming requests simultaneously. This allows for load balancing and better utilization of resources.
+Active-Passive Setup: In an active-passive setup, only one server (the active server) handles incoming requests, while the other server(s) (the passive server(s)) remain idle. The passive server(s) act as backups, ready to take over if the active server fails. This setup provides redundancy but underutilizes resources.
+Primary-Replica (Master-Slave) Database Cluster:
+
+In a Primary-Replica cluster, the primary node (also known as the master) handles both read and write operations. It is the authoritative source of data and manages all updates to the database.
+The replica nodes (also known as slaves) replicate data from the primary node in real-time. They handle read operations, relieving the primary node from read-intensive queries and improving scalability.
+Replication ensures data redundancy, fault tolerance, and the ability to scale read operations horizontally.
+Difference between Primary and Replica in regard to the application:
+
+The primary node handles write operations and updates to the database. Any modifications or changes made by the application are performed on the primary node.
+Replicas, on the other hand, handle read operations and provide read scalability. They serve as read replicas of the primary node and can be utilized to distribute read traffic across multiple nodes, improving performance.
+Now let's discuss the issues with the given infrastructure:
+
+Single Point of Failure (SPOF): Currently, there are potential SPOFs in the infrastructure. If any component, such as the single server or the single database, fails, it could cause downtime and disruption to the entire system. To mitigate this, redundancy should be introduced for critical components.
+
+Security Issues:
+
+No Firewall: The infrastructure lacks a firewall to control network access and protect against unauthorized access or malicious attacks. Implementing a firewall is crucial to secure the system.
+No HTTPS: Without HTTPS (HTTP over SSL/TLS), communication between clients and the web server is not encrypted. This exposes sensitive data to potential eavesdropping and man-in-the-middle attacks. Enabling HTTPS using SSL/TLS certificates is essential for secure data transmission.
+No Monitoring: Without monitoring tools, it becomes difficult to track the health, performance, and availability of the infrastructure. Monitoring should be implemented to detect issues, ensure system stability, and facilitate timely troubleshooting.
+
+Addressing these issues will improve the resilience, security, and manageability of the infrastructure.
+
 ## why you are adding it
 Additional elements, such as load balancers, multiple servers, or redundant components, are added to the infrastructure to achieve specific goals. These goals may include improving performance, scalability, reliability, and fault tolerance. For example, load balancers distribute incoming network traffic across multiple servers to ensure better resource utilization, handle high traffic loads, and provide redundancy in case of server failures.
 
@@ -121,3 +167,32 @@ b. Limited flexibility and scalability: When all servers have the same component
 c. Reduced specialization: Different components may have unique optimization requirements or configurations. Having servers with all the same components eliminates the ability to fine-tune individual components for optimal performance and efficiency.
 
 In a well-designed infrastructure, it is generally recommended to address these issues by implementing measures like SSL termination at the application level, employing database replication or sharding for write scalability and redundancy, and adopting a distributed architecture with specialized servers for different components to enhance fault isolation and flexibility.
+
+## Scale up
+
+To build the requested infrastructure, we will add the following components:
+
+Server: The server is a fundamental component in any infrastructure. It provides the computing resources needed to run applications and services. In this case, we will add separate servers for the web server, application server, and database.
+
+Load Balancer: A load balancer distributes incoming network traffic across multiple servers to ensure high availability and improve performance. By adding a load balancer (in this case, HAProxy) configured as a cluster, we achieve several benefits:
+
+High Availability: If one load balancer fails, the others in the cluster can handle the traffic, ensuring the continuous availability of the application.
+Scalability: As the application grows and the load on the servers increases, additional servers can be added to the cluster, allowing for horizontal scalability.
+Traffic Distribution: The load balancer evenly distributes incoming requests across the web servers, preventing any single server from becoming overloaded.
+Health Monitoring: The load balancer can periodically check the health of the servers and automatically remove any that are unresponsive, ensuring that only healthy servers handle requests.
+Web Server: A web server is responsible for serving static files (e.g., HTML, CSS, images) to clients over the internet. It handles client requests and responds with the appropriate content. Separating the web server from the application server provides several advantages:
+
+Performance: By offloading the static file serving to dedicated web servers, the application servers can focus on processing dynamic requests, improving overall performance.
+Caching: Web servers can implement caching mechanisms to store and serve frequently accessed static content, reducing the load on the application servers and improving response times.
+Security: Isolating the web server from the application server adds an extra layer of security, as any vulnerabilities or attacks targeting the web server would be contained and not impact the application server.
+Application Server: The application server hosts the core business logic and processes dynamic requests generated by users. It interacts with databases, external services, and other components to generate responses. Having a dedicated application server offers several benefits:
+
+Scalability: With separate application servers, you can scale them independently based on the specific needs of your application. This flexibility allows you to allocate resources efficiently and handle increasing loads without affecting other components.
+Isolation: By separating the application server from the web server and database, any issues or performance bottlenecks that occur in one component are less likely to impact the others.
+Modularity: The application server can be developed and deployed independently, enabling easier updates and maintenance without affecting the other components.
+Database: The database stores and manages the application's data. Separating it onto its own server provides several advantages:
+
+Data Integrity: By isolating the database, you reduce the risk of accidental data corruption caused by other components.
+Performance: Dedicated database servers can be optimized specifically for handling data storage and retrieval, improving performance compared to sharing resources with other components.
+Scaling: With a separate database server, you can scale it independently from the application servers based on the database's workload and performance requirements.
+Overall, this infrastructure design aims to improve scalability, performance, availability, security, and maintainability by distributing the workload across multiple specialized components and leveraging load balancing techniques.
